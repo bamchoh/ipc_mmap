@@ -1,7 +1,7 @@
 # ipc_mmap
 
 This library is IPC(interprocess communication) over mmap and POSIX semaphore.
-This library was implemented by refering the following blog:
+This library was implemented by refering the blog:
 [mmap＋POSIXセマフォによる高速なプロセス間通信 - mp::ipc_vector](http://frsyuki.hatenablog.com/entry/20081028/p1)
 
 # How to build a library
