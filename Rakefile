@@ -2,6 +2,8 @@ CC = "gcc"
 CPP = "g++"
 GTEST_DIR=File.join(__dir__, "extsrc/googletest/googletest")
 RAKE_ROOT=__dir__
+OPT1 = "" # "-pg"
+OPT2 = "-O2"
 
 execs = %w(client server)
 
@@ -19,7 +21,7 @@ end
 
 task :example => :all do |t|
   execs.each do |name|
-    sh "gcc -I./include -L. ./example/#{name}.c -l#{name} -lpthread -o #{name}"
+    sh "#{CC} -std=c99 -I./include -L. ./example/#{name}.c #{OPT1} -o #{name} #{OPT2} -l#{name} -lpthread"
   end
 end
 
@@ -56,5 +58,5 @@ execs.each do |exec|
 end
 
 rule '.o' => './src/%X.c' do |t|
-  sh "gcc -I./include -c -o #{t.name} #{t.prerequisites.join(' ')} -lpthread"
+  sh "#{CC} -I./include -c #{OPT1} -o #{t.name} #{OPT2} #{t.prerequisites.join(' ')} -lpthread"
 end

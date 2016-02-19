@@ -1,6 +1,6 @@
 #include "ipc_base.h"
 
-void rb_enqueue(mmap_info *this, const void *buf, size_t n)
+void rb_enqueue(mmap_info *this, char *buf, size_t n)
 {
   char *top   = (char *)this->data;
   size_t tail = *(this->tail);
@@ -12,27 +12,35 @@ void rb_enqueue(mmap_info *this, const void *buf, size_t n)
     mmap_info_lock(this);
   }
 
-  int i;
-  for(i = 0;i < n;i++) {
-    memcpy(top + ((i + tail) & mask), buf + i, 1);
+  if((n+tail) & ~mask) {
+    // more than max length
+    memcpy(top + tail, buf, (mask+1)-tail);
+    memcpy(top, buf + (mask+1)-tail, (n+tail) & mask);
+  } else {
+    // less than max length
+    memcpy(top + tail, buf, n);
   }
 
-  *(this->tail) = ((i + tail) & mask);
+  *(this->tail) = ((n + tail) & mask);
   *(this->data_size) += n;
 }
 
-void rb_dequeue(mmap_info *this, void *buf, size_t n)
+void rb_dequeue(mmap_info *this, char *buf, size_t n)
 {
   char *top   = (char *)this->data;
   size_t head = *(this->head);
   long mask   = this->mask;
 
-  int i;
-  for(i = 0;i < n;i++) {
-    memcpy(buf + i, top + ((i + head) & mask), 1);
+  if((n+head) & ~mask) {
+    // max length over
+    memcpy(buf, top + head, (mask+1)-head);
+    memcpy(buf + (mask+1)-head, top, (n+head) & mask);
+  } else {
+    // within max length
+    memcpy(buf, top + head, n);
   }
 
-  *(this->head) = ((i + head) & mask);
+  *(this->head) = ((n + head) & mask);
   *(this->data_size) -= n;
 }
 
